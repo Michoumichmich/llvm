@@ -78,20 +78,11 @@ add_custom_command(OUTPUT ${devicelib-obj-cmath-fp64}
                    VERBATIM)
 
 add_custom_command(OUTPUT ${spv_binary_dir}/libsycl-fallback-cassert.spv
-                   COMMAND ${clang} -fsycl-device-only -fno-sycl-use-bitcode
+                   COMMAND ${clang} -S -fsycl-device-only -fno-sycl-use-bitcode
                            ${compile_opts}
                            ${CMAKE_CURRENT_SOURCE_DIR}/fallback-cassert.cpp
                            -o ${spv_binary_dir}/libsycl-fallback-cassert.spv
                    MAIN_DEPENDENCY fallback-cassert.cpp
-                   DEPENDS wrapper.h device.h clang spirv_vars.h llvm-spirv
-                   VERBATIM)
-
-add_custom_command(OUTPUT ${spv_binary_dir}/libsycl-fallback-cstring.spv
-                   COMMAND ${clang} -fsycl-device-only -fno-sycl-use-bitcode
-                           ${compile_opts}
-                           ${CMAKE_CURRENT_SOURCE_DIR}/fallback-cstring.cpp
-                           -o ${spv_binary_dir}/libsycl-fallback-cstring.spv
-                   MAIN_DEPENDENCY fallback-cstring.cpp
                    DEPENDS wrapper.h device.h clang spirv_vars.h llvm-spirv
                    VERBATIM)
 
@@ -104,17 +95,8 @@ add_custom_command(OUTPUT ${obj_binary_dir}/libsycl-fallback-cassert.${lib-suffi
                    DEPENDS wrapper.h device.h clang spirv_vars.h clang-offload-bundler
                    VERBATIM)
 
-add_custom_command(OUTPUT ${obj_binary_dir}/libsycl-fallback-cstring.${lib-suffix}
-                   COMMAND ${clang} -fsycl -c
-                           ${compile_opts} ${sycl_targets_opt}
-                           ${CMAKE_CURRENT_SOURCE_DIR}/fallback-cstring.cpp
-                           -o ${obj_binary_dir}/libsycl-fallback-cstring.${lib-suffix}
-                   MAIN_DEPENDENCY fallback-cstring.cpp
-                   DEPENDS wrapper.h device.h clang spirv_vars.h clang-offload-bundler
-                   VERBATIM)
-
 add_custom_command(OUTPUT ${spv_binary_dir}/libsycl-fallback-complex.spv
-                   COMMAND ${clang} -fsycl-device-only -fno-sycl-use-bitcode
+                   COMMAND ${clang} -S -fsycl-device-only -fno-sycl-use-bitcode
                            ${compile_opts}
                            ${CMAKE_CURRENT_SOURCE_DIR}/fallback-complex.cpp
                            -o ${spv_binary_dir}/libsycl-fallback-complex.spv
@@ -132,7 +114,7 @@ add_custom_command(OUTPUT ${obj_binary_dir}/libsycl-fallback-complex.${lib-suffi
                    VERBATIM)
 
 add_custom_command(OUTPUT ${spv_binary_dir}/libsycl-fallback-complex-fp64.spv
-                   COMMAND ${clang} -fsycl-device-only -fno-sycl-use-bitcode
+                   COMMAND ${clang} -S -fsycl-device-only -fno-sycl-use-bitcode
                            ${compile_opts}
                            ${CMAKE_CURRENT_SOURCE_DIR}/fallback-complex-fp64.cpp
                            -o ${spv_binary_dir}/libsycl-fallback-complex-fp64.spv
@@ -150,7 +132,7 @@ add_custom_command(OUTPUT ${obj_binary_dir}/libsycl-fallback-complex-fp64.${lib-
                    VERBATIM)
 
 add_custom_command(OUTPUT ${spv_binary_dir}/libsycl-fallback-cmath.spv
-                   COMMAND ${clang} -fsycl-device-only -fno-sycl-use-bitcode
+                   COMMAND ${clang} -S -fsycl-device-only -fno-sycl-use-bitcode
                            ${compile_opts}
                            ${CMAKE_CURRENT_SOURCE_DIR}/fallback-cmath.cpp
                            -o ${spv_binary_dir}/libsycl-fallback-cmath.spv
@@ -168,7 +150,7 @@ add_custom_command(OUTPUT ${obj_binary_dir}/libsycl-fallback-cmath.${lib-suffix}
                    VERBATIM)
 
 add_custom_command(OUTPUT ${spv_binary_dir}/libsycl-fallback-cmath-fp64.spv
-                   COMMAND ${clang} -fsycl-device-only -fno-sycl-use-bitcode
+                   COMMAND ${clang} -S -fsycl-device-only -fno-sycl-use-bitcode
                            ${compile_opts}
                            ${CMAKE_CURRENT_SOURCE_DIR}/fallback-cmath-fp64.cpp
                            -o ${spv_binary_dir}/libsycl-fallback-cmath-fp64.spv
@@ -228,7 +210,6 @@ add_custom_target(libsycldevice-obj DEPENDS
 )
 add_custom_target(libsycldevice-spv DEPENDS
   ${spv_binary_dir}/libsycl-fallback-cassert.spv
-  ${spv_binary_dir}/libsycl-fallback-cstring.spv
   ${spv_binary_dir}/libsycl-fallback-complex.spv
   ${spv_binary_dir}/libsycl-fallback-complex-fp64.spv
   ${spv_binary_dir}/libsycl-fallback-cmath.spv
@@ -236,7 +217,6 @@ add_custom_target(libsycldevice-spv DEPENDS
   )
 add_custom_target(libsycldevice-fallback-obj DEPENDS
   ${obj_binary_dir}/libsycl-fallback-cassert.${lib-suffix}
-  ${obj_binary_dir}/libsycl-fallback-cstring.${lib-suffix}
   ${obj_binary_dir}/libsycl-fallback-complex.${lib-suffix}
   ${obj_binary_dir}/libsycl-fallback-complex-fp64.${lib-suffix}
   ${obj_binary_dir}/libsycl-fallback-cmath.${lib-suffix}
@@ -259,7 +239,6 @@ set(install_dest_lib lib${LLVM_LIBDIR_SUFFIX})
 
 install(FILES ${devicelib-obj-file}
 	      ${obj_binary_dir}/libsycl-fallback-cassert.${lib-suffix}
-	      ${obj_binary_dir}/libsycl-fallback-cstring.${lib-suffix}
               ${devicelib-obj-complex}
 	      ${obj_binary_dir}/libsycl-fallback-complex.${lib-suffix}
               ${devicelib-obj-complex-fp64}
@@ -273,7 +252,6 @@ install(FILES ${devicelib-obj-file}
         COMPONENT libsycldevice)
 
 install(FILES ${spv_binary_dir}/libsycl-fallback-cassert.spv
-              ${spv_binary_dir}/libsycl-fallback-cstring.spv
               ${spv_binary_dir}/libsycl-fallback-complex.spv
               ${spv_binary_dir}/libsycl-fallback-complex-fp64.spv
               ${spv_binary_dir}/libsycl-fallback-cmath.spv

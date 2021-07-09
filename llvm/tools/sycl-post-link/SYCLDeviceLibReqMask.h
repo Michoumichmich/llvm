@@ -28,8 +28,7 @@ enum class DeviceLibExt : std::uint32_t {
   cl_intel_devicelib_math,
   cl_intel_devicelib_math_fp64,
   cl_intel_devicelib_complex,
-  cl_intel_devicelib_complex_fp64,
-  cl_intel_devicelib_cstring,
+  cl_intel_devicelib_complex_fp64
 };
 
 using SYCLDeviceLibFuncMap = std::unordered_map<std::string, DeviceLibExt>;
