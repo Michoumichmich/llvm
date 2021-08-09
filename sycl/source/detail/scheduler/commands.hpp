@@ -504,8 +504,7 @@ private:
 /// operation.
 class ExecCGCommand : public Command {
 public:
-  ExecCGCommand(std::unique_ptr<detail::CommandGroup> CommandGroup,
-                QueueImplPtr Queue);
+  ExecCGCommand(std::unique_ptr<detail::CG> CommandGroup, QueueImplPtr Queue);
 
   std::vector<StreamImplPtr> getStreams() const;
 
@@ -514,7 +513,7 @@ public:
   void printDot(std::ostream &Stream) const final;
   void emitInstrumentationData() final;
 
-  detail::CommandGroup &getCG() const { return *MCommandGroup; }
+  detail::CG &getCG() const { return *MCommandGroup; }
 
   // MEmptyCmd is only employed if this command refers to host-task.
   // The mechanism of lookup for single EmptyCommand amongst users of
@@ -540,9 +539,10 @@ private:
       CGExecKernel *ExecKernel,
       std::shared_ptr<device_image_impl> DeviceImageImpl, RT::PiKernel Kernel,
       NDRDescT &NDRDesc, std::vector<RT::PiEvent> &RawEvents,
-      RT::PiEvent &Event, ProgramManager::KernelArgMask EliminatedArgMask);
+      RT::PiEvent &Event,
+      const ProgramManager::KernelArgMask &EliminatedArgMask);
 
-  std::unique_ptr<detail::CommandGroup> MCommandGroup;
+  std::unique_ptr<detail::CG> MCommandGroup;
 
   friend class Command;
   friend class Scheduler;
