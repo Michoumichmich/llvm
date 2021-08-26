@@ -145,9 +145,7 @@ public:
 #define __SYCL_GEN_OPT_BASE(op)                                                \
   id<dimensions> operator op(const id<dimensions> &rhs) const {                \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs.common_array[i];   \
-    }                                                                          \
+    result.common_array = this->common_array op rhs.common_array;              \
     return result;                                                             \
   }
 
@@ -158,18 +156,14 @@ public:
   template <typename T>                                                        \
   EnableIfIntegral<T, id<dimensions>> operator op(const T &rhs) const {        \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs;                   \
-    }                                                                          \
+    result.common_array = this->common_array op rhs;                           \
     return result;                                                             \
   }                                                                            \
   template <typename T>                                                        \
   friend EnableIfIntegral<T, id<dimensions>> operator op(                      \
       const T &lhs, const id<dimensions> &rhs) {                               \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = lhs op rhs.common_array[i];                     \
-    }                                                                          \
+    result.common_array = lhs op rhs.common_array;                             \
     return result;                                                             \
   }
 #else
@@ -177,17 +171,13 @@ public:
   __SYCL_GEN_OPT_BASE(op)                                                      \
   id<dimensions> operator op(const size_t &rhs) const {                        \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs;                   \
-    }                                                                          \
+    result.common_array = this->common_array op rhs;                           \
     return result;                                                             \
   }                                                                            \
   friend id<dimensions> operator op(const size_t &lhs,                         \
                                     const id<dimensions> &rhs) {               \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = lhs op rhs.common_array[i];                     \
-    }                                                                          \
+    result.common_array = lhs op rhs.common_array;                             \
     return result;                                                             \
   }
 #endif // __SYCL_DISABLE_ID_TO_INT_CONV__
@@ -215,15 +205,11 @@ public:
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
   id<dimensions> &operator op(const id<dimensions> &rhs) {                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      this->common_array[i] op rhs.common_array[i];                            \
-    }                                                                          \
+    this->common_array op rhs.common_array;                                    \
     return *this;                                                              \
   }                                                                            \
   id<dimensions> &operator op(const size_t &rhs) {                             \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      this->common_array[i] op rhs;                                            \
-    }                                                                          \
+    this->common_array op rhs;                                                 \
     return *this;                                                              \
   }
 

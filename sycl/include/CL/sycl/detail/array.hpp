@@ -87,8 +87,6 @@ public:
   __SYCL_GEN_OPT(>=)
 #undef __SYCL_GEN_OPT
 
-#undef __SYCL_GEN_OPT
-
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
   register_array &operator op(const register_array &rhs) {                     \
@@ -185,7 +183,6 @@ public:
   __SYCL_GEN_OPT(>=)
 #undef __SYCL_GEN_OPT
 
-#undef __SYCL_GEN_OPT
 
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
@@ -286,8 +283,6 @@ public:
   __SYCL_GEN_OPT(>=)
 #undef __SYCL_GEN_OPT
 
-#undef __SYCL_GEN_OPT
-
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
   register_array &operator op(const register_array &rhs) {                     \
@@ -349,17 +344,17 @@ public:
   // Conversion operators to derived classes
   operator cl::sycl::id<dimensions>() const {
     cl::sycl::id<dimensions> result;
-    for (int i = 0; i < dimensions; ++i) {
-      result[i] = common_array[i];
-    }
+
+    result.common_array = common_array;
+
     return result;
   }
 
   operator cl::sycl::range<dimensions>() const {
     cl::sycl::range<dimensions> result;
-    for (int i = 0; i < dimensions; ++i) {
-      result[i] = common_array[i];
-    }
+
+    result.common_array = common_array;
+
     return result;
   }
 
