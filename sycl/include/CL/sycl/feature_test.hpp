@@ -24,6 +24,7 @@ namespace sycl {
 #define SYCL_EXT_ONEAPI_MATRIX 2
 #define SYCL_EXT_ONEAPI_MAX_WORK_GROUP_QUERY 1
 #endif
+#define SYCL_EXT_INTEL_BF16_CONVERSION 1
 
 } // namespace sycl
 } // __SYCL_INLINE_NAMESPACE(cl)
