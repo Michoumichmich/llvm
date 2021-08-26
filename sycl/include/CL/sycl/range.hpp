@@ -49,9 +49,8 @@ public:
 
   explicit operator id<dimensions>() const {
     id<dimensions> result;
-    for (int i = 0; i < dimensions; ++i) {
-      result[i] = this->get(i);
-    }
+    result.common_array = this->common_array;
+
     return result;
   }
 
@@ -73,26 +72,20 @@ public:
 #define __SYCL_GEN_OPT(op)                                                     \
   range<dimensions> operator op(const range<dimensions> &rhs) const {          \
     range<dimensions> result(*this);                                           \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs.common_array[i];   \
-    }                                                                          \
+    result.common_array = this->common_array op rhs.common_array;              \
     return result;                                                             \
   }                                                                            \
   template <typename T>                                                        \
   IntegralType<T, range<dimensions>> operator op(const T &rhs) const {         \
     range<dimensions> result(*this);                                           \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs;                   \
-    }                                                                          \
+    result.common_array = this->common_array op rhs;                           \
     return result;                                                             \
   }                                                                            \
   template <typename T>                                                        \
   friend IntegralType<T, range<dimensions>> operator op(                       \
       const T &lhs, const range<dimensions> &rhs) {                            \
     range<dimensions> result(rhs);                                             \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = lhs op rhs.common_array[i];                     \
-    }                                                                          \
+    result.common_array = lhs op rhs.common_array;                             \
     return result;                                                             \
   }
 
@@ -118,15 +111,11 @@ public:
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
   range<dimensions> &operator op(const range<dimensions> &rhs) {               \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      this->common_array[i] op rhs[i];                                         \
-    }                                                                          \
+    this->common_array op rhs;                                                 \
     return *this;                                                              \
   }                                                                            \
   range<dimensions> &operator op(const size_t &rhs) {                          \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      this->common_array[i] op rhs;                                            \
-    }                                                                          \
+    this->common_array op rhs;                                                 \
     return *this;                                                              \
   }
 
@@ -148,7 +137,7 @@ private:
   friend class detail::Builder;
 
   // Adjust the first dim of the range
-  void set_range_dim0(const size_t dim0) { this->common_array[0] = dim0; }
+  void set_range_dim0(const size_t dim0) { this->common_array.v0_ = dim0; }
 };
 
 #ifdef __cpp_deduction_guides
