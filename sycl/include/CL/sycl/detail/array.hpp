@@ -31,12 +31,12 @@ public:
 
   explicit register_array(T v0) : v0_(v0) {}
 
-  inline T &operator[](size_t idx) {
+  inline T &operator[](int idx) {
     (void)idx;
     return v0_;
   }
 
-  inline T operator[](size_t idx) const {
+  inline T operator[](int idx) const {
     (void)idx;
     return v0_;
   }
@@ -87,15 +87,13 @@ public:
   __SYCL_GEN_OPT(>=)
 #undef __SYCL_GEN_OPT
 
-#undef __SYCL_GEN_OPT
-
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
   register_array &operator op(const register_array &rhs) {                     \
     this->v0_ op rhs.v0_;                                                      \
     return *this;                                                              \
   }                                                                            \
-  register_array &operator op(const size_t &rhs) {                             \
+  register_array &operator op(const T &rhs) {                                  \
     this->v0_ op rhs;                                                          \
     return *this;                                                              \
   }
@@ -126,12 +124,12 @@ public:
 
   explicit register_array(T v0, T v1) : v0_(v0), v1_(v1) {}
 
-  inline T &operator[](size_t idx) {
+  inline T &operator[](int idx) {
     (void)idx;
     return idx == 0 ? v0_ : v1_;
   }
 
-  inline T operator[](size_t idx) const {
+  inline T operator[](int idx) const {
     (void)idx;
     return idx == 0 ? v0_ : v1_;
   }
@@ -185,7 +183,6 @@ public:
   __SYCL_GEN_OPT(>=)
 #undef __SYCL_GEN_OPT
 
-#undef __SYCL_GEN_OPT
 
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
@@ -194,7 +191,7 @@ public:
     this->v1_ op rhs.v1_;                                                      \
     return *this;                                                              \
   }                                                                            \
-  register_array &operator op(const size_t &rhs) {                             \
+  register_array &operator op(const T &rhs) {                                  \
     this->v0_ op rhs;                                                          \
     this->v1_ op rhs;                                                          \
     return *this;                                                              \
@@ -226,11 +223,11 @@ public:
 
   explicit register_array(T v0, T v1, T v2) : v0_(v0), v1_(v1), v2_(v2) {}
 
-  inline T &operator[](size_t idx) {
+  inline T &operator[](int idx) {
     return idx == 0 ? v0_ : (idx == 1 ? v1_ : v2_);
   }
 
-  inline T operator[](size_t idx) const {
+  inline T operator[](int idx) const {
     return idx == 0 ? v0_ : (idx == 1 ? v1_ : v2_);
   }
 
@@ -286,8 +283,6 @@ public:
   __SYCL_GEN_OPT(>=)
 #undef __SYCL_GEN_OPT
 
-#undef __SYCL_GEN_OPT
-
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
   register_array &operator op(const register_array &rhs) {                     \
@@ -296,7 +291,7 @@ public:
     this->v2_ op rhs.v2_;                                                      \
     return *this;                                                              \
   }                                                                            \
-  register_array &operator op(const size_t &rhs) {                             \
+  register_array &operator op(const T &rhs) {                                  \
     this->v0_ op rhs;                                                          \
     this->v1_ op rhs;                                                          \
     this->v2_ op rhs;                                                          \
@@ -349,17 +344,17 @@ public:
   // Conversion operators to derived classes
   operator cl::sycl::id<dimensions>() const {
     cl::sycl::id<dimensions> result;
-    for (int i = 0; i < dimensions; ++i) {
-      result[i] = common_array[i];
-    }
+
+    result.common_array = common_array;
+
     return result;
   }
 
   operator cl::sycl::range<dimensions>() const {
     cl::sycl::range<dimensions> result;
-    for (int i = 0; i < dimensions; ++i) {
-      result[i] = common_array[i];
-    }
+
+    result.common_array = common_array;
+
     return result;
   }
 

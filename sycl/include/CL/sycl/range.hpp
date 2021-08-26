@@ -56,6 +56,7 @@ public:
 
   size_t size() const {
     size_t size = 1;
+#pragma unroll
     for (int i = 0; i < dimensions; ++i) {
       size *= this->get(i);
     }
