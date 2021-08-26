@@ -18,99 +18,199 @@ template <int dimensions> class id;
 template <int dimensions> class range;
 namespace detail {
 
-template <int dimensions = 1> class array {
-  static_assert(dimensions >= 1, "Array cannot be 0-dimensional.");
+template <int dimensions = 1> class array;
+
+template <> class array<1> {
 
 public:
   /* The following constructor is only available in the array struct
    * specialization where: dimensions==1 */
-  template <int N = dimensions>
-  array(typename detail::enable_if_t<(N == 1), size_t> dim0 = 0)
-      : common_array{dim0} {}
-
-  /* The following constructors are only available in the array struct
-   * specialization where: dimensions==2 */
-  template <int N = dimensions>
-  array(typename detail::enable_if_t<(N == 2), size_t> dim0, size_t dim1)
-      : common_array{dim0, dim1} {}
-
-  template <int N = dimensions, detail::enable_if_t<(N == 2), size_t> = 0>
-  array() : array(0, 0) {}
-
-  /* The following constructors are only available in the array struct
-   * specialization where: dimensions==3 */
-  template <int N = dimensions>
-  array(typename detail::enable_if_t<(N == 3), size_t> dim0, size_t dim1,
-        size_t dim2)
-      : common_array{dim0, dim1, dim2} {}
-
-  template <int N = dimensions, detail::enable_if_t<(N == 3), size_t> = 0>
-  array() : array(0, 0, 0) {}
+  array(size_t dim0 = 0) : v0{dim0} {}
 
   // Conversion operators to derived classes
-  operator cl::sycl::id<dimensions>() const {
-    cl::sycl::id<dimensions> result;
-    for (int i = 0; i < dimensions; ++i) {
-      result[i] = common_array[i];
-    }
+  operator cl::sycl::id<1>() const {
+    cl::sycl::id<1> result;
+    result.v0 = v0;
     return result;
   }
 
-  operator cl::sycl::range<dimensions>() const {
-    cl::sycl::range<dimensions> result;
-    for (int i = 0; i < dimensions; ++i) {
-      result[i] = common_array[i];
-    }
+  operator cl::sycl::range<1>() const {
+    cl::sycl::range<1> result;
+    result.v0 = v0;
     return result;
   }
 
   size_t get(int dimension) const {
     check_dimension(dimension);
-    return common_array[dimension];
+    return v0;
   }
 
   size_t &operator[](int dimension) {
     check_dimension(dimension);
-    return common_array[dimension];
+    return v0;
   }
 
   size_t operator[](int dimension) const {
     check_dimension(dimension);
-    return common_array[dimension];
+    return v0;
   }
 
-  array(const array<dimensions> &rhs) = default;
-  array(array<dimensions> &&rhs) = default;
-  array<dimensions> &operator=(const array<dimensions> &rhs) = default;
-  array<dimensions> &operator=(array<dimensions> &&rhs) = default;
+  array(const array<1> &rhs) = default;
+  array(array<1> &&rhs) = default;
+  array<1> &operator=(const array<1> &rhs) = default;
+  array<1> &operator=(array<1> &&rhs) = default;
 
   // Returns true iff all elements in 'this' are equal to
   // the corresponding elements in 'rhs'.
-  bool operator==(const array<dimensions> &rhs) const {
-    for (int i = 0; i < dimensions; ++i) {
-      if (this->common_array[i] != rhs.common_array[i]) {
-        return false;
-      }
+  bool operator==(const array<1> &rhs) const { return this->v0 == rhs.v0; }
+
+  // Returns true iff there is at least one element in 'this'
+  // which is not equal to the corresponding element in 'rhs'.
+  bool operator!=(const array<1> &rhs) const { return this->v0 != rhs.v0; }
+
+protected:
+  size_t v0;
+  __SYCL_ALWAYS_INLINE void check_dimension(int dimension) const {
+#ifndef __SYCL_DEVICE_ONLY__
+    if (dimension != 1) {
+      throw cl::sycl::invalid_parameter_error("Index out of range",
+                                              PI_INVALID_VALUE);
     }
-    return true;
+#endif
+    (void)dimension;
+  }
+};
+
+template <> class array<2> {
+
+public:
+  /* The following constructors are only available in the array struct
+   * specialization where: dimensions==2 */
+  array(size_t dim0, size_t dim1) : v0{dim0}, v1{dim1} {}
+
+  array() : array(0, 0) {}
+
+  // Conversion operators to derived classes
+  operator cl::sycl::id<2>() const {
+    cl::sycl::id<2> result;
+    result.v0 = v0;
+    result.v1 = v1;
+    return result;
+  }
+
+  operator cl::sycl::range<2>() const {
+    cl::sycl::range<2> result;
+    result.v0 = v0;
+    result.v1 = v1;
+    return result;
+  }
+
+  size_t get(int dimension) const {
+    check_dimension(dimension);
+    return dimension == 0 ? v0 : v1;
+  }
+
+  size_t &operator[](int dimension) {
+    check_dimension(dimension);
+    return dimension == 0 ? v0 : v1;
+  }
+
+  size_t operator[](int dimension) const {
+    check_dimension(dimension);
+    return dimension == 0 ? v0 : v1;
+  }
+
+  array(const array<2> &rhs) = default;
+  array(array<2> &&rhs) = default;
+  array<2> &operator=(const array<2> &rhs) = default;
+  array<2> &operator=(array<2> &&rhs) = default;
+
+  // Returns true iff all elements in 'this' are equal to
+  // the corresponding elements in 'rhs'.
+  bool operator==(const array<2> &rhs) const {
+    return v0 == rhs.v0 && v1 == rhs.v1;
   }
 
   // Returns true iff there is at least one element in 'this'
   // which is not equal to the corresponding element in 'rhs'.
-  bool operator!=(const array<dimensions> &rhs) const {
-    for (int i = 0; i < dimensions; ++i) {
-      if (this->common_array[i] != rhs.common_array[i]) {
-        return true;
-      }
-    }
-    return false;
+  bool operator!=(const array<2> &rhs) const {
+    return v0 != rhs.v0 || v1 != rhs.v1;
   }
 
 protected:
-  size_t common_array[dimensions];
+  size_t v0, v1;
   __SYCL_ALWAYS_INLINE void check_dimension(int dimension) const {
 #ifndef __SYCL_DEVICE_ONLY__
-    if (dimension >= dimensions || dimension < 0) {
+    if (dimension != 2) {
+      throw cl::sycl::invalid_parameter_error("Index out of range",
+                                              PI_INVALID_VALUE);
+    }
+#endif
+    (void)dimension;
+  }
+};
+
+template<> class array<3> {
+
+public:
+  array(size_t dim0, size_t dim1, size_t dim2) : v0{dim0}, v1{dim1}, v2{dim2} {}
+
+  array() : array(0, 0, 0) {}
+
+  // Conversion operators to derived classes
+  operator cl::sycl::id<3>() const {
+    cl::sycl::id<3> result;
+    result.v0 = v0;
+    result.v1 = v1;
+    result.v2 = v2;
+    return result;
+  }
+
+  operator cl::sycl::range<3>() const {
+    cl::sycl::range<3> result;
+    result.v0 = v0;
+    result.v1 = v1;
+    result.v2 = v2;
+    return result;
+  }
+
+  size_t get(int dimension) const {
+    check_dimension(dimension);
+    return dimension == 0 ? v0 : (dimension == 1 ? v1 : v2);
+  }
+
+  size_t &operator[](int dimension) {
+    check_dimension(dimension);
+    return dimension == 0 ? v0 : (dimension == 1 ? v1 : v2);
+  }
+
+  size_t operator[](int dimension) const {
+    check_dimension(dimension);
+    return dimension == 0 ? v0 : (dimension == 1 ? v1 : v2);
+  }
+
+  array(const array<3> &rhs) = default;
+  array(array<3> &&rhs) = default;
+  array<3> &operator=(const array<3> &rhs) = default;
+  array<3> &operator=(array<3> &&rhs) = default;
+
+  // Returns true iff all elements in 'this' are equal to
+  // the corresponding elements in 'rhs'.
+  bool operator==(const array<3> &rhs) const {
+    return v0 == rhs.v0 && v1 == rhs.v1 && v2 == rhs.v2;
+  }
+
+  // Returns true iff there is at least one element in 'this'
+  // which is not equal to the corresponding element in 'rhs'.
+  bool operator!=(const array<3> &rhs) const {
+    return v0 != rhs.v0 || v1 != rhs.v1 || v2 != rhs.v2;
+  }
+
+protected:
+  size_t v0, v1, v2;
+  __SYCL_ALWAYS_INLINE void check_dimension(int dimension) const {
+#ifndef __SYCL_DEVICE_ONLY__
+    if (dimension != 3) {
       throw cl::sycl::invalid_parameter_error("Index out of range",
                                               PI_INVALID_VALUE);
     }

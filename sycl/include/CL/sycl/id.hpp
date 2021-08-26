@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <CL/sycl/range.hpp>
 #include <CL/sycl/detail/array.hpp>
 #include <CL/sycl/detail/common.hpp>
 #include <CL/sycl/detail/helpers.hpp>
 #include <CL/sycl/detail/type_traits.hpp>
-#include <CL/sycl/range.hpp>
+
 
 __SYCL_INLINE_NAMESPACE(cl) {
 namespace sycl {
@@ -88,6 +89,7 @@ public:
   explicit operator range<dimensions>() const {
     range<dimensions> result(
         detail::InitializedVal<dimensions, range>::template get<0>());
+#pragma unroll
     for (int i = 0; i < dimensions; ++i) {
       result[i] = this->get(i);
     }
@@ -122,14 +124,14 @@ public:
 #define __SYCL_GEN_OPT(op)                                                     \
   template <typename T>                                                        \
   EnableIfIntegral<T, bool> operator op(const T &rhs) const {                  \
-    if (this->common_array[0] != rhs)                                          \
+    if ((*this)[0] != rhs)                                                     \
       return false op true;                                                    \
     return true op true;                                                       \
   }                                                                            \
   template <typename T>                                                        \
   friend EnableIfIntegral<T, bool> operator op(const T &lhs,                   \
                                                const id<dimensions> &rhs) {    \
-    if (lhs != rhs.common_array[0])                                            \
+    if (lhs != rhs[0])                                                         \
       return false op true;                                                    \
     return true op true;                                                       \
   }
@@ -145,8 +147,8 @@ public:
 #define __SYCL_GEN_OPT_BASE(op)                                                \
   id<dimensions> operator op(const id<dimensions> &rhs) const {                \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs.common_array[i];   \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      result.common_array[i] = (*this)[i] op rhs[i];                           \
     }                                                                          \
     return result;                                                             \
   }
@@ -158,8 +160,8 @@ public:
   template <typename T>                                                        \
   EnableIfIntegral<T, id<dimensions>> operator op(const T &rhs) const {        \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs;                   \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      result[i] = (*this)[i] op rhs;                                           \
     }                                                                          \
     return result;                                                             \
   }                                                                            \
@@ -167,8 +169,8 @@ public:
   friend EnableIfIntegral<T, id<dimensions>> operator op(                      \
       const T &lhs, const id<dimensions> &rhs) {                               \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = lhs op rhs.common_array[i];                     \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      result[i] = lhs op rhs[i];                                               \
     }                                                                          \
     return result;                                                             \
   }
@@ -177,16 +179,16 @@ public:
   __SYCL_GEN_OPT_BASE(op)                                                      \
   id<dimensions> operator op(const size_t &rhs) const {                        \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs;                   \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      result[i] = (*this)[i] op rhs;                                           \
     }                                                                          \
     return result;                                                             \
   }                                                                            \
   friend id<dimensions> operator op(const size_t &lhs,                         \
                                     const id<dimensions> &rhs) {               \
     id<dimensions> result;                                                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = lhs op rhs.common_array[i];                     \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      result[i] = lhs op rhs[i];                                               \
     }                                                                          \
     return result;                                                             \
   }
@@ -215,14 +217,14 @@ public:
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
   id<dimensions> &operator op(const id<dimensions> &rhs) {                     \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      this->common_array[i] op rhs.common_array[i];                            \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      (*this)[i] op rhs[i];                                                    \
     }                                                                          \
     return *this;                                                              \
   }                                                                            \
   id<dimensions> &operator op(const size_t &rhs) {                             \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      this->common_array[i] op rhs;                                            \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      (*this)[i] op rhs;                                                       \
     }                                                                          \
     return *this;                                                              \
   }
@@ -250,6 +252,7 @@ template <int dimensions>
 size_t getOffsetForId(range<dimensions> Range, id<dimensions> Id,
                       id<dimensions> Offset) {
   size_t offset = 0;
+#pragma unroll
   for (int i = 0; i < dimensions; ++i)
     offset = offset * Range[i] + Offset[i] + Id[i];
   return offset;

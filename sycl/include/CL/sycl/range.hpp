@@ -49,6 +49,7 @@ public:
 
   explicit operator id<dimensions>() const {
     id<dimensions> result;
+#pragma unroll
     for (int i = 0; i < dimensions; ++i) {
       result[i] = this->get(i);
     }
@@ -57,6 +58,7 @@ public:
 
   size_t size() const {
     size_t size = 1;
+#pragma unroll
     for (int i = 0; i < dimensions; ++i) {
       size *= this->get(i);
     }
@@ -73,16 +75,18 @@ public:
 #define __SYCL_GEN_OPT(op)                                                     \
   range<dimensions> operator op(const range<dimensions> &rhs) const {          \
     range<dimensions> result(*this);                                           \
+    _Pragma("unroll")                                                          \
     for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs.common_array[i];   \
+      result[i] = this->get(i) op rhs.get(i);                                  \
     }                                                                          \
     return result;                                                             \
   }                                                                            \
   template <typename T>                                                        \
   IntegralType<T, range<dimensions>> operator op(const T &rhs) const {         \
     range<dimensions> result(*this);                                           \
+    _Pragma("unroll")                                                          \
     for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = this->common_array[i] op rhs;                   \
+      result[i] = this->get(i) op rhs;                                         \
     }                                                                          \
     return result;                                                             \
   }                                                                            \
@@ -90,8 +94,8 @@ public:
   friend IntegralType<T, range<dimensions>> operator op(                       \
       const T &lhs, const range<dimensions> &rhs) {                            \
     range<dimensions> result(rhs);                                             \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      result.common_array[i] = lhs op rhs.common_array[i];                     \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      result[i] = lhs op rhs[i];                                               \
     }                                                                          \
     return result;                                                             \
   }
@@ -118,14 +122,14 @@ public:
 // OP is: +=, -=, *=, /=, %=, <<=, >>=, &=, |=, ^=
 #define __SYCL_GEN_OPT(op)                                                     \
   range<dimensions> &operator op(const range<dimensions> &rhs) {               \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      this->common_array[i] op rhs[i];                                         \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      (*this)[i] op rhs[i];                                                    \
     }                                                                          \
     return *this;                                                              \
   }                                                                            \
   range<dimensions> &operator op(const size_t &rhs) {                          \
-    for (int i = 0; i < dimensions; ++i) {                                     \
-      this->common_array[i] op rhs;                                            \
+    _Pragma("unroll") for (int i = 0; i < dimensions; ++i) {                   \
+      (*this)[i] op rhs;                                                       \
     }                                                                          \
     return *this;                                                              \
   }
@@ -148,7 +152,7 @@ private:
   friend class detail::Builder;
 
   // Adjust the first dim of the range
-  void set_range_dim0(const size_t dim0) { this->common_array[0] = dim0; }
+  void set_range_dim0(const size_t dim0) { (*this)[0] = dim0; }
 };
 
 #ifdef __cpp_deduction_guides
