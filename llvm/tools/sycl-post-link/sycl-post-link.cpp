@@ -715,6 +715,20 @@ static TableFiles processOneModule(std::unique_ptr<Module> M, bool IsEsimd,
   if (!M)
     return TblFiles;
 
+  // After linking device bitcode "llvm.used" holds references to the kernels
+  // that are defined in the device image. But after splitting device image into
+  // separate kernels we may end up with having references to kernel declaration
+  // originating from "llvm.used" in the IR that is passed to llvm-spirv tool,
+  // and these declarations cause an assertion in llvm-spirv. To workaround this
+  // issue remove "llvm.used" from the input module before performing any other
+  // actions.
+  bool IsLLVMUsedRemoved = false;
+  if (GlobalVariable *GV = M->getGlobalVariable("llvm.used")) {
+    assert(GV->user_empty() && "unexpected llvm.used users");
+    GV->eraseFromParent();
+    IsLLVMUsedRemoved = true;
+  }
+
   if (IsEsimd && LowerEsimd)
     LowerEsimdConstructs(*M);
 
