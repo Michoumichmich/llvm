@@ -45,6 +45,7 @@ DPC++ extensions status:
 | [Matrix](Matrix/dpcpp-joint-matrix.asciidoc)                                                                                | Partially supported(AMX AOT)              | Not supported: dynamic-extent, wg and wi scopes, layouts other than packed|
 | [SYCL_INTEL_free_function_queries](FreeFunctionQueries/SYCL_INTEL_free_function_queries.asciidoc)                           | Supported (experimental)                  | |
 | [EXT_ONEAPI_max_work_groups](MaxWorkGroupQueries/max_work_group_query.md)                                                   | Supported                                 | |
+| [SYCL_INTEL_bf16_conversion](Bf16Conversion/SYCL_INTEL_bf16_conversion.asciidoc)                                            | Partially supported (Level Zero: GPU)     | Currently available only on Xe HP GPU. ext_intel_bf16_conversion aspect is not supported. |
 
 Legend:
 
