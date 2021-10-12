@@ -9,7 +9,7 @@ processor devices.
 To use `opencl-aot` tool, you must have:
 
 * OpenCL runtime installed for the target device (see
-  [Install low level runtime](../sycl/doc/GetStartedGuide.md#install-low-level-runtime))
+  [Install low level runtime](../../sycl/doc/GetStartedGuide.md#install-low-level-runtime))
 * OpenCL ICD Loader installed with support of OpenCL 2.1 or higher
 
 ## How to use
