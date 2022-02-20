@@ -1953,6 +1953,15 @@ static pi_result SetKernelParamsAndLaunch(
     }
   }
 
+  if (NDRDesc.launch_tag == launch::max_occupancy) {
+    return Plugin.call_nocheck<PiApiKind::piEnqueueKernelLaunch>(
+        Queue->getHandleRef(), Kernel, NDRDesc.Dims, &NDRDesc.GlobalOffset[0],
+        nullptr, nullptr, RawEvents.size(),
+        RawEvents.empty() ? nullptr : &RawEvents[0], OutEvent);
+  } else if (NDRDesc.launch_tag != launch::none) {
+    return PI_INVALID_LAUNCH_TAG;
+  }
+
   adjustNDRangePerKernel(NDRDesc, Kernel, *(Queue->getDeviceImplPtr()));
 
   // Remember this information before the range dimensions are reversed
@@ -2270,6 +2279,13 @@ cl_int ExecCGCommand::enqueueImp() {
     CGExecKernel *ExecKernel = (CGExecKernel *)MCommandGroup.get();
 
     NDRDescT &NDRDesc = ExecKernel->MNDRDesc;
+
+    if (NDRDesc.launch_tag != launch::none &&
+        MQueue->getPlugin().getBackend() != backend::ext_oneapi_cuda) {
+      throw cl::sycl::runtime_error("Maximum occupancy non supported",
+                                    CL_INVALID_WORK_GROUP_SIZE);
+    }
+
     std::vector<ArgDesc> &Args = ExecKernel->MArgs;
 
     if (MQueue->is_host() || (MQueue->getPlugin().getBackend() ==
@@ -2292,6 +2308,7 @@ cl_int ExecCGCommand::enqueueImp() {
       } else {
         assert(MQueue->getPlugin().getBackend() ==
                backend::ext_intel_esimd_emulator);
+        assert(!NDRDesc.launch_tag == launch::none);
         // Dims==0 for 'single_task() - void(void) type'
         uint32_t Dims = (Args.size() > 0) ? NDRDesc.Dims : 0;
         MQueue->getPlugin().call<PiApiKind::piEnqueueKernelLaunch>(

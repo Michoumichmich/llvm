@@ -239,10 +239,20 @@ event handler::finalize() {
             backend::ext_intel_esimd_emulator) {
           // Dims==0 for 'single_task() - void(void) type'
           uint32_t Dims = (MArgs.size() > 0) ? MNDRDesc.Dims : 0;
-          MQueue->getPlugin().call<detail::PiApiKind::piEnqueueKernelLaunch>(
-              nullptr, reinterpret_cast<pi_kernel>(MHostKernel->getPtr()), Dims,
-              &MNDRDesc.GlobalOffset[0], &MNDRDesc.GlobalSize[0],
-              &MNDRDesc.LocalSize[0], 0, nullptr, nullptr);
+          if (MNDRDesc.launch_tag == launch::none) {
+            MQueue->getPlugin().call<detail::PiApiKind::piEnqueueKernelLaunch>(
+                nullptr, reinterpret_cast<pi_kernel>(MHostKernel->getPtr()),
+                Dims, &MNDRDesc.GlobalOffset[0], &MNDRDesc.GlobalSize[0],
+                &MNDRDesc.LocalSize[0], 0, nullptr, nullptr);
+          } else if (MNDRDesc.launch_tag == launch::max_occupancy) {
+            MQueue->getPlugin().call<detail::PiApiKind::piEnqueueKernelLaunch>(
+                nullptr, reinterpret_cast<pi_kernel>(MHostKernel->getPtr()),
+                Dims, &MNDRDesc.GlobalOffset[0], nullptr, nullptr, 0, nullptr,
+                nullptr);
+          } else {
+            throw runtime_error("Enqueue process failed.",
+                                PI_INVALID_LAUNCH_TAG);
+          }
           Result = CL_SUCCESS;
         } else {
           Result = enqueueImpKernel(MQueue, MNDRDesc, MArgs, KernelBundleImpPtr,

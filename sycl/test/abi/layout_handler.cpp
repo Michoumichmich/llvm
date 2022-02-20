@@ -101,7 +101,8 @@ void foo() {
 // CHECK-NEXT: 280 |       class sycl::detail::array<3> (base)
 // CHECK-NEXT: 280 |         size_t[3] common_array
 // CHECK-NEXT: 304 |     size_t Dims
-// CHECK-NEXT: 312 |   class std::basic_string<char> MKernelName
+// CHECK-NEXT: 312 |     launch launch_tag
+// CHECK-NEXT: 320 |   class std::basic_string<char> MKernelName
 // CHECK-NEXT: 312 |     struct std::basic_string<char>::_Alloc_hider _M_dataplus
 // CHECK-NEXT: 312 |       class std::allocator<char> (base) (empty)
 // CHECK-NEXT: 312 |         class __gnu_cxx::new_allocator<char> (base) (empty)
