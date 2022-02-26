@@ -356,7 +356,7 @@ TEST_F(CudaKernelsTest, PIkerneldispatch) {
   size_t localWorkSize[] = {1};
   ASSERT_EQ((plugin->call_nocheck<detail::PiApiKind::piEnqueueKernelLaunch>(
                 queue_, kern, workDim, globalWorkOffset, globalWorkSize,
-                localWorkSize, 0, nullptr, nullptr)),
+                localWorkSize, 0, nullptr, nullptr, sycl::launch::none)),
             PI_SUCCESS);
 
   ASSERT_EQ((plugin->call_nocheck<detail::PiApiKind::piMemRelease>(memObj)),
@@ -410,7 +410,7 @@ TEST_F(CudaKernelsTest, PIkerneldispatchTwo) {
   size_t localWorkSize[] = {1};
   ASSERT_EQ((plugin->call_nocheck<detail::PiApiKind::piEnqueueKernelLaunch>(
                 queue_, kern, workDim, globalWorkOffset, globalWorkSize,
-                localWorkSize, 0, nullptr, nullptr)),
+                localWorkSize, 0, nullptr, nullptr, sycl::launch::none)),
             PI_SUCCESS);
 
   ASSERT_EQ((plugin->call_nocheck<detail::PiApiKind::piMemRelease>(memObj)),

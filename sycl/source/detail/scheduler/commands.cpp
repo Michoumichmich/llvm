@@ -1953,6 +1953,19 @@ static pi_result SetKernelParamsAndLaunch(
     }
   }
 
+  if (NDRDesc.launch_tag == sycl::launch::max_occupancy ||
+      NDRDesc.launch_tag == sycl::launch::cooperative) {
+    if (NDRDesc.Dims != 1) {
+      throw sycl::runtime_error("Requested launch method not implemented",
+                                PI_INVALID_LAUNCH_TAG);
+    }
+    pi_result Error = Plugin.call_nocheck<PiApiKind::piEnqueueKernelLaunch>(
+        Queue->getHandleRef(), Kernel, 1, nullptr, nullptr, nullptr,
+        RawEvents.size(), RawEvents.empty() ? nullptr : &RawEvents[0], OutEvent,
+        NDRDesc.launch_tag);
+    return Error;
+  }
+
   adjustNDRangePerKernel(NDRDesc, Kernel, *(Queue->getDeviceImplPtr()));
 
   // Remember this information before the range dimensions are reversed
@@ -1962,7 +1975,6 @@ static pi_result SetKernelParamsAndLaunch(
 
   size_t RequiredWGSize[3] = {0, 0, 0};
   size_t *LocalSize = nullptr;
-
   if (HasLocalSize)
     LocalSize = &NDRDesc.LocalSize[0];
   else {
@@ -1981,7 +1993,8 @@ static pi_result SetKernelParamsAndLaunch(
   pi_result Error = Plugin.call_nocheck<PiApiKind::piEnqueueKernelLaunch>(
       Queue->getHandleRef(), Kernel, NDRDesc.Dims, &NDRDesc.GlobalOffset[0],
       &NDRDesc.GlobalSize[0], LocalSize, RawEvents.size(),
-      RawEvents.empty() ? nullptr : &RawEvents[0], OutEvent);
+      RawEvents.empty() ? nullptr : &RawEvents[0], OutEvent,
+      NDRDesc.launch_tag);
   return Error;
 }
 
@@ -2270,6 +2283,13 @@ cl_int ExecCGCommand::enqueueImp() {
     CGExecKernel *ExecKernel = (CGExecKernel *)MCommandGroup.get();
 
     NDRDescT &NDRDesc = ExecKernel->MNDRDesc;
+
+    if (NDRDesc.launch_tag != launch::none &&
+        MQueue->getPlugin().getBackend() != backend::ext_oneapi_cuda) {
+      throw cl::sycl::runtime_error("Maximum occupancy non supported",
+                                    CL_INVALID_WORK_GROUP_SIZE);
+    }
+
     std::vector<ArgDesc> &Args = ExecKernel->MArgs;
 
     if (MQueue->is_host() || (MQueue->getPlugin().getBackend() ==
@@ -2298,7 +2318,7 @@ cl_int ExecCGCommand::enqueueImp() {
             nullptr,
             reinterpret_cast<pi_kernel>(ExecKernel->MHostKernel->getPtr()),
             Dims, &NDRDesc.GlobalOffset[0], &NDRDesc.GlobalSize[0],
-            &NDRDesc.LocalSize[0], 0, nullptr, nullptr);
+            &NDRDesc.LocalSize[0], 0, nullptr, nullptr, NDRDesc.launch_tag);
       }
 
       return CL_SUCCESS;

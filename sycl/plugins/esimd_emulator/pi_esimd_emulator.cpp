@@ -1630,16 +1630,22 @@ pi_result piMemBufferPartition(pi_mem, pi_mem_flags, pi_buffer_create_type,
   DIE_NO_IMPLEMENTATION;
 }
 
-pi_result
-piEnqueueKernelLaunch(pi_queue Queue, pi_kernel Kernel, pi_uint32 WorkDim,
-                      const size_t *GlobalWorkOffset,
-                      const size_t *GlobalWorkSize, const size_t *LocalWorkSize,
-                      pi_uint32 NumEventsInWaitList,
-                      const pi_event *EventWaitList, pi_event *Event) {
+pi_result piEnqueueKernelLaunch(pi_queue Queue, pi_kernel Kernel,
+                                pi_uint32 WorkDim,
+                                const size_t *GlobalWorkOffset,
+                                const size_t *GlobalWorkSize,
+                                const size_t *LocalWorkSize,
+                                pi_uint32 NumEventsInWaitList,
+                                const pi_event *EventWaitList, pi_event *Event,
+                                sycl::launch launch_type = sycl::launch::none) {
   const size_t LocalWorkSz[] = {1, 1, 1};
 
   if (Kernel == nullptr) {
     return PI_INVALID_KERNEL;
+  }
+
+  if (launch_type != sycl::launch::none) {
+    return PI_INVALID_LAUNCH_TAG;
   }
 
   // WorkDim == 0 is reserved for 'single_task()' kernel with no

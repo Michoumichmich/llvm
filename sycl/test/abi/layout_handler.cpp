@@ -101,31 +101,32 @@ void foo() {
 // CHECK-NEXT: 280 |       class sycl::detail::array<3> (base)
 // CHECK-NEXT: 280 |         size_t[3] common_array
 // CHECK-NEXT: 304 |     size_t Dims
-// CHECK-NEXT: 312 |   class std::basic_string<char> MKernelName
-// CHECK-NEXT: 312 |     struct std::basic_string<char>::_Alloc_hider _M_dataplus
-// CHECK-NEXT: 312 |       class std::allocator<char> (base) (empty)
-// CHECK-NEXT: 312 |         class __gnu_cxx::new_allocator<char> (base) (empty)
-// CHECK-NEXT: 312 |       std::basic_string<char>::pointer _M_p
-// CHECK-NEXT: 320 |     std::basic_string<char>::size_type _M_string_length
-// CHECK-NEXT: 328 |     union std::basic_string<char>::(anonymous at {{.*}})
-// CHECK-NEXT: 328 |       char[16] _M_local_buf
-// CHECK-NEXT: 328 |       std::basic_string<char>::size_type _M_allocated_capacity
-// CHECK-NEXT: 344 |   class std::shared_ptr<class sycl::detail::kernel_impl> MKernel
-// CHECK-NEXT: 344 |     class std::__shared_ptr<class sycl::detail::kernel_impl, __gnu_cxx::_S_atomic> (base)
-// CHECK-NEXT: 344 |       class std::__shared_ptr_access<class sycl::detail::kernel_impl, __gnu_cxx::_S_atomic, false, false> (base) (empty)
-// CHECK-NEXT: 344 |       std::__shared_ptr<class sycl::detail::kernel_impl, __gnu_cxx::_S_atomic>::element_type * _M_ptr
-// CHECK-NEXT: 352 |       class std::__shared_count<__gnu_cxx::_S_atomic> _M_refcount
-// CHECK-NEXT: 352 |         _Sp_counted_base<(enum __gnu_cxx::_Lock_policy)2U> * _M_pi
-// CHECK-NEXT: 360 |   detail::class CG::CGTYPE MCGType
-// CHECK-NEXT: 368 |   void * MSrcPtr
-// CHECK-NEXT: 376 |   void * MDstPtr
-// CHECK-NEXT: 384 |   size_t MLength
-// CHECK-NEXT: 392 |   class std::vector<char> MPattern
-// CHECK-NEXT: 392 |     struct std::_Vector_base<char, class std::allocator<char> > (base)
-// CHECK-NEXT: 392 |       struct std::_Vector_base<char, class std::allocator<char> >::_Vector_impl _M_impl
-// CHECK-NEXT: 392 |         class std::allocator<char> (base) (empty)
-// CHECK-NEXT: 392 |           class __gnu_cxx::new_allocator<char> (base) (empty)
-// CHECK: 392 |         std::_Vector_base<char, class std::allocator<char> >::pointer _M_start
+// CHECK-NEXT: 312 |     enum sycl::launch launch_tag
+// CHECK-NEXT: 320 |   class std::basic_string<char> MKernelName
+// CHECK-NEXT: 320 |     struct std::basic_string<char>::_Alloc_hider _M_dataplus
+// CHECK-NEXT: 320 |       class std::allocator<char> (base) (empty)
+// CHECK-NEXT: 320 |         class __gnu_cxx::new_allocator<char> (base) (empty)
+// CHECK-NEXT: 320 |       std::basic_string<char>::pointer _M_p
+// CHECK-NEXT: 328 |     std::basic_string<char>::size_type _M_string_length
+// CHECK-NEXT: 336 |     union std::basic_string<char>::(anonymous at {{.*}})
+// CHECK-NEXT: 336 |       char[16] _M_local_buf
+// CHECK-NEXT: 336 |       std::basic_string<char>::size_type _M_allocated_capacity
+// CHECK-NEXT: 352 |   class std::shared_ptr<class sycl::detail::kernel_impl> MKernel
+// CHECK-NEXT: 352 |     class std::__shared_ptr<class sycl::detail::kernel_impl, __gnu_cxx::_S_atomic> (base)
+// CHECK-NEXT: 352 |       class std::__shared_ptr_access<class sycl::detail::kernel_impl, __gnu_cxx::_S_atomic, false, false> (base) (empty)
+// CHECK-NEXT: 352 |       std::__shared_ptr<class sycl::detail::kernel_impl, __gnu_cxx::_S_atomic>::element_type * _M_ptr
+// CHECK-NEXT: 360 |       class std::__shared_count<__gnu_cxx::_S_atomic> _M_refcount
+// CHECK-NEXT: 360 |         _Sp_counted_base<(enum __gnu_cxx::_Lock_policy)2U> * _M_pi
+// CHECK-NEXT: 368 |   detail::class CG::CGTYPE MCGType
+// CHECK-NEXT: 376 |   void * MSrcPtr
+// CHECK-NEXT: 384 |   void * MDstPtr
+// CHECK-NEXT: 392 |   size_t MLength
+// CHECK-NEXT: 400 |   class std::vector<char> MPattern
+// CHECK-NEXT: 400 |     struct std::_Vector_base<char, class std::allocator<char> > (base)
+// CHECK-NEXT: 400 |       struct std::_Vector_base<char, class std::allocator<char> >::_Vector_impl _M_impl
+// CHECK-NEXT: 400 |         class std::allocator<char> (base) (empty)
+// CHECK-NEXT: 400 |           class __gnu_cxx::new_allocator<char> (base) (empty)
+// CHECK: 400 |         std::_Vector_base<char, class std::allocator<char> >::pointer _M_start
 // CHECK-NEXT: 400 |         std::_Vector_base<char, class std::allocator<char> >::pointer _M_finish
 // CHECK-NEXT: 408 |         std::_Vector_base<char, class std::allocator<char> >::pointer _M_end_of_storage
 // CHECK-NEXT: 416 |   class std::unique_ptr<class sycl::detail::HostKernelBase> MHostKernel

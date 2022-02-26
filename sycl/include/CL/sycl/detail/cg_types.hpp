@@ -10,6 +10,7 @@
 
 #include <CL/sycl/detail/host_profiling_info.hpp>
 #include <CL/sycl/detail/kernel_desc.hpp>
+#include <CL/sycl/detail/launch_types.h>
 #include <CL/sycl/group.hpp>
 #include <CL/sycl/id.hpp>
 #include <CL/sycl/interop_handle.hpp>
@@ -21,6 +22,7 @@
 
 __SYCL_INLINE_NAMESPACE(cl) {
 namespace sycl {
+
 namespace detail {
 
 // The structure represents kernel argument.
@@ -52,7 +54,8 @@ class NDRDescT {
 
 public:
   NDRDescT()
-      : GlobalSize{0, 0, 0}, LocalSize{0, 0, 0}, NumWorkGroups{0, 0, 0} {}
+      : GlobalSize{0, 0, 0}, LocalSize{0, 0, 0}, NumWorkGroups{0, 0, 0},
+        launch_tag{launch::none} {}
 
   template <int Dims_> void set(sycl::range<Dims_> NumWorkItems) {
     for (int I = 0; I < Dims_; ++I) {
@@ -121,6 +124,7 @@ public:
   /// zero
   sycl::range<3> NumWorkGroups;
   size_t Dims;
+  launch launch_tag;
 };
 
 template <typename, typename T> struct check_fn_signature {

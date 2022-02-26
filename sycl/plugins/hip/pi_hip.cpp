@@ -2519,7 +2519,8 @@ pi_result hip_piEnqueueKernelLaunch(
     pi_queue command_queue, pi_kernel kernel, pi_uint32 work_dim,
     const size_t *global_work_offset, const size_t *global_work_size,
     const size_t *local_work_size, pi_uint32 num_events_in_wait_list,
-    const pi_event *event_wait_list, pi_event *event) {
+    const pi_event *event_wait_list, pi_event *event,
+    sycl::launch launch_type = sycl::launch::none) {
 
   // Preconditions
   assert(command_queue != nullptr);
@@ -2528,6 +2529,10 @@ pi_result hip_piEnqueueKernelLaunch(
   assert(global_work_offset != nullptr);
   assert(work_dim > 0);
   assert(work_dim < 4);
+
+  if (launch_type != sycl::launch::none) {
+    return PI_INVALID_LAUNCH_TAG;
+  }
 
   // Set the number of threads per block to the number of threads per warp
   // by default unless user has provided a better number
@@ -4895,7 +4900,7 @@ pi_result piPluginInit(pi_plugin *PluginInit) {
   //_PI_CL(piextMemGetNativeHandle, hip_piextMemGetNativeHandle)
   _PI_CL(piextMemCreateWithNativeHandle, hip_piextMemCreateWithNativeHandle)
   // Program
-  _PI_CL(piProgramCreate, hip_piProgramCreate)
+  _PI_CL(piProgramCreate, Create)
   _PI_CL(piclProgramCreateWithSource, hip_piclProgramCreateWithSource)
   _PI_CL(piProgramCreateWithBinary, hip_piProgramCreateWithBinary)
   _PI_CL(piProgramGetInfo, hip_piProgramGetInfo)

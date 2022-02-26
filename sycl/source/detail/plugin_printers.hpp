@@ -36,6 +36,10 @@ template <> inline void print<>(PiPlatform val) {
   std::cout << "pi_platform : " << val << std::endl;
 }
 
+template <> inline void print<>(sycl::launch val) {
+  std::cout << "launch : " << (int)val << std::endl;
+}
+
 template <> inline void print<>(PiEvent val) {
   std::cout << "pi_event : " << val << std::endl;
 }
