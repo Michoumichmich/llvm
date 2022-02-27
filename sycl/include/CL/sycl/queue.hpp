@@ -970,6 +970,18 @@ public:
         CodeLoc);
   }
 
+  template <typename KernelName = detail::auto_name, typename KernelType>
+  event parallel_for(launch launch_tag,
+                     _KERNELFUNCPARAM(KernelFunc) _CODELOCPARAM(&CodeLoc)) {
+    _CODELOCARG(&CodeLoc);
+    return submit(
+        [&](handler &CGH) {
+          CGH.template parallel_for<KernelName, KernelType>(launch_tag,
+                                                            KernelFunc);
+        },
+        CodeLoc);
+  }
+
   /// parallel_for version with a kernel represented as a lambda + nd_range that
   /// specifies global, local sizes and offset.
   ///
@@ -987,6 +999,19 @@ public:
         [&](handler &CGH) {
           CGH.depends_on(DepEvent);
           CGH.template parallel_for<KernelName, KernelType>(ExecutionRange,
+                                                            KernelFunc);
+        },
+        CodeLoc);
+  }
+
+  template <typename KernelName = detail::auto_name, typename KernelType>
+  event parallel_for(launch launch_tag, event DepEvent,
+                     _KERNELFUNCPARAM(KernelFunc) _CODELOCPARAM(&CodeLoc)) {
+    _CODELOCARG(&CodeLoc);
+    return submit(
+        [&](handler &CGH) {
+          CGH.depends_on(DepEvent);
+          CGH.template parallel_for<KernelName, KernelType>(launch_tag,
                                                             KernelFunc);
         },
         CodeLoc);
@@ -1016,6 +1041,19 @@ public:
         CodeLoc);
   }
 
+  template <typename KernelName = detail::auto_name, typename KernelType>
+  event parallel_for(launch launch_tag, const std::vector<event> &DepEvents,
+                     _KERNELFUNCPARAM(KernelFunc) _CODELOCPARAM(&CodeLoc)) {
+    _CODELOCARG(&CodeLoc);
+    return submit(
+        [&](handler &CGH) {
+          CGH.depends_on(DepEvents);
+          CGH.template parallel_for<KernelName, KernelType>(launch_tag,
+                                                            KernelFunc);
+        },
+        CodeLoc);
+  }
+
   /// parallel_for version with a kernel represented as a lambda + nd_range that
   /// specifies global, local sizes and offset.
   ///
@@ -1033,6 +1071,19 @@ public:
         [&](handler &CGH) {
           CGH.template parallel_for<KernelName, KernelType, Dims, Reduction>(
               ExecutionRange, Redu, KernelFunc);
+        },
+        CodeLoc);
+  }
+
+  template <typename KernelName = detail::auto_name, typename KernelType,
+            typename Reduction>
+  event parallel_for(launch launch_tag, Reduction Redu,
+                     _KERNELFUNCPARAM(KernelFunc) _CODELOCPARAM(&CodeLoc)) {
+    _CODELOCARG(&CodeLoc);
+    return submit(
+        [&](handler &CGH) {
+          CGH.template parallel_for<KernelName, KernelType, Reduction>(
+              launch_tag, Redu, KernelFunc);
         },
         CodeLoc);
   }

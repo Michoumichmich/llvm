@@ -1718,7 +1718,7 @@ piEnqueueKernelLaunch(pi_queue Queue, pi_kernel Kernel, pi_uint32 WorkDim,
                       const size_t *GlobalWorkOffset,
                       const size_t *GlobalWorkSize, const size_t *LocalWorkSize,
                       pi_uint32 NumEventsInWaitList,
-                      const pi_event *EventWaitList, pi_event *Event) {
+                      const pi_event *EventWaitList, pi_event *Event, sycl::launch launch_type = sycl::launch::none) {
 
   const size_t LocalWorkSz[] = {1, 1, 1};
 
@@ -1726,7 +1726,7 @@ piEnqueueKernelLaunch(pi_queue Queue, pi_kernel Kernel, pi_uint32 WorkDim,
     return PI_INVALID_KERNEL;
   }
 
-  if (WorkDim > 3 || WorkDim == 0) {
+  if (WorkDim > 3 || WorkDim == 0 || launch_type != sycl::launch::none) {
     return PI_INVALID_WORK_GROUP_SIZE;
   }
 

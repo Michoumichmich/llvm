@@ -58,6 +58,7 @@
 #include <CL/cl_ext.h>
 #include <CL/sycl/detail/cl.h>
 #include <CL/sycl/detail/export.hpp>
+#include <CL/sycl/detail/launch_types.h>
 
 #include <cstdint>
 
@@ -115,6 +116,7 @@ typedef enum {
   PI_IMAGE_FORMAT_NOT_SUPPORTED = CL_IMAGE_FORMAT_NOT_SUPPORTED,
   PI_MEM_OBJECT_ALLOCATION_FAILURE = CL_MEM_OBJECT_ALLOCATION_FAILURE,
   PI_LINK_PROGRAM_FAILURE = CL_LINK_PROGRAM_FAILURE,
+  PI_INVALID_LAUNCH_TAG = -996,
   PI_COMMAND_EXECUTION_FAILURE =
       -997, ///< PI_COMMAND_EXECUTION_FAILURE indicates an error occurred
             ///< during command enqueue or execution.
@@ -1476,7 +1478,8 @@ __SYCL_EXPORT pi_result piEnqueueKernelLaunch(
     pi_queue queue, pi_kernel kernel, pi_uint32 work_dim,
     const size_t *global_work_offset, const size_t *global_work_size,
     const size_t *local_work_size, pi_uint32 num_events_in_wait_list,
-    const pi_event *event_wait_list, pi_event *event);
+    const pi_event *event_wait_list, pi_event *event,
+    sycl::launch launch_type = sycl::launch::none);
 
 __SYCL_EXPORT pi_result piEnqueueNativeKernel(
     pi_queue queue, void (*user_func)(void *), void *args, size_t cb_args,

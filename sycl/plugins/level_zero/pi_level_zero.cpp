@@ -4763,16 +4763,20 @@ pi_result piKernelRelease(pi_kernel Kernel) {
   return PI_SUCCESS;
 }
 
-pi_result
-piEnqueueKernelLaunch(pi_queue Queue, pi_kernel Kernel, pi_uint32 WorkDim,
-                      const size_t *GlobalWorkOffset,
-                      const size_t *GlobalWorkSize, const size_t *LocalWorkSize,
-                      pi_uint32 NumEventsInWaitList,
-                      const pi_event *EventWaitList, pi_event *Event) {
+pi_result piEnqueueKernelLaunch(
+    pi_queue Queue, pi_kernel Kernel, pi_uint32 WorkDim,
+    const size_t *GlobalWorkOffset, const size_t *GlobalWorkSize,
+    const size_t *LocalWorkSize, pi_uint32 NumEventsInWaitList,
+    const pi_event *EventWaitList, pi_event *Event, sycl::launch launch_type) {
   PI_ASSERT(Kernel, PI_INVALID_KERNEL);
   PI_ASSERT(Queue, PI_INVALID_QUEUE);
   PI_ASSERT(Event, PI_INVALID_EVENT);
   PI_ASSERT((WorkDim > 0) && (WorkDim < 4), PI_INVALID_WORK_DIMENSION);
+
+  if (launch_type != sycl::launch::none) {
+    zePrint("Unsupported launch method requested on ESIMD emulator device.");
+    return PI_INVALID_LAUNCH_TAG;
+  }
 
   if (GlobalWorkOffset != NULL) {
     if (!PiDriverGlobalOffsetExtensionFound) {

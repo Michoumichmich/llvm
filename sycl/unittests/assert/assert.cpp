@@ -190,7 +190,8 @@ static pi_result redefinedEnqueueKernelLaunch(pi_queue, pi_kernel, pi_uint32,
                                               const size_t *, const size_t *,
                                               const size_t *LocalSize,
                                               pi_uint32 N, const pi_event *Deps,
-                                              pi_event *RetEvent) {
+                                              pi_event *RetEvent,
+                                              sycl::launch) {
   int *Ret = new int[1];
   *Ret = KernelLaunchCounter++;
   // This output here is to reduce amount of time requried to debug/reproduce a
@@ -328,7 +329,8 @@ static pi_result redefinedEnqueueKernelLaunch(pi_queue, pi_kernel, pi_uint32,
                                               const size_t *, const size_t *,
                                               const size_t *LocalSize,
                                               pi_uint32 N, const pi_event *Deps,
-                                              pi_event *RetEvent) {
+                                              pi_event *RetEvent,
+                                              sycl::launch) {
   int *Ret = new int[1];
   *Ret = KernelLaunchCounter++;
   // This output here is to reduce amount of time requried to debug/reproduce a

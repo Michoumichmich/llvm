@@ -257,7 +257,7 @@ event handler::finalize() {
           MQueue->getPlugin().call<detail::PiApiKind::piEnqueueKernelLaunch>(
               nullptr, reinterpret_cast<pi_kernel>(MHostKernel->getPtr()),
               MNDRDesc.Dims, &MNDRDesc.GlobalOffset[0], &MNDRDesc.GlobalSize[0],
-              &MNDRDesc.LocalSize[0], 0, nullptr, nullptr);
+              &MNDRDesc.LocalSize[0], 0, nullptr, nullptr, MNDRDesc.launch_tag);
           Result = CL_SUCCESS;
         } else {
           Result = enqueueImpKernel(MQueue, MNDRDesc, MArgs, KernelBundleImpPtr,

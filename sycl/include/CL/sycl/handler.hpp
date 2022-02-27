@@ -1589,6 +1589,33 @@ public:
 #endif
   }
 
+  template <typename KernelName = detail::auto_name, typename KernelType>
+  void parallel_for(launch launch_tag, _KERNELFUNCPARAM(KernelFunc)) {
+    throwIfActionIsCreated();
+    using NameT =
+        typename detail::get_kernel_name_t<KernelName, KernelType>::name;
+    verifyUsedKernelBundle(detail::KernelInfo<NameT>::getName());
+    using LambdaArgType = sycl::detail::lambda_arg_type<KernelType, nd_item<1>>;
+    using TransformedArgType =
+        typename TransformUserItemType<1, LambdaArgType>::type;
+    kernel_parallel_for_wrapper<NameT, TransformedArgType>(KernelFunc);
+#ifndef __SYCL_DEVICE_ONLY__
+
+    if (launch_tag == launch::max_occupancy ||
+        launch_tag == launch::cooperative) {
+      MNDRDesc.launch_tag = launch_tag;
+      MNDRDesc.Dims = 1;
+    } else {
+      throw sycl::runtime_error("Requested parallel_for method not implemented",
+                                PI_INVALID_LAUNCH_TAG);
+    }
+
+    StoreLambda<NameT, KernelType, 1, TransformedArgType>(
+        std::move(KernelFunc));
+    setType(detail::CG::Kernel);
+#endif
+  }
+
   /// Defines and invokes a SYCL kernel function for the specified nd_range.
   ///
   /// The SYCL kernel function is defined as a lambda function or a named
@@ -1665,6 +1692,18 @@ public:
     }
   }
 
+  template <typename KernelName = detail::auto_name, typename KernelType,
+            typename Reduction>
+  detail::enable_if_t<Reduction::has_fast_atomics>
+  parallel_for(launch launch_tag, Reduction Redu,
+               _KERNELFUNCPARAM(KernelFunc)) {
+    (void)launch_tag;
+    (void)Redu;
+    (void)KernelFunc;
+    static_assert(!std::is_same<KernelName, KernelName>::value,
+                  "Requested parallel_for launch method not implemented");
+  }
+
   /// Implements parallel_for() accepting nd_range \p Range and one reduction
   /// object. This version is a specialization for the add operator.
   /// It performs runtime checks for device aspect "atomic64"; if found, fast
@@ -1708,6 +1747,18 @@ public:
     }
   }
 
+  template <typename KernelName = detail::auto_name, typename KernelType,
+            typename Reduction>
+  detail::enable_if_t<Reduction::has_atomic_add_float64>
+  parallel_for(launch launch_tag, Reduction Redu,
+               _KERNELFUNCPARAM(KernelFunc)) {
+    (void)launch_tag;
+    (void)Redu;
+    (void)KernelFunc;
+    static_assert(!std::is_same<KernelName, KernelName>::value,
+                  "Requested parallel_for launch method not implemented");
+  }
+
   /// Defines and invokes a SYCL kernel function for the specified nd_range.
   /// Performs reduction operation specified in \p Redu.
   ///
@@ -1730,6 +1781,19 @@ public:
                _KERNELFUNCPARAM(KernelFunc)) {
 
     parallel_for_Impl<KernelName>(Range, Redu, KernelFunc);
+  }
+
+  template <typename KernelName = detail::auto_name, typename KernelType,
+            typename Reduction>
+  detail::enable_if_t<!Reduction::has_fast_atomics &&
+                      !Reduction::has_atomic_add_float64>
+  parallel_for(launch launch_tag, Reduction Redu,
+               _KERNELFUNCPARAM(KernelFunc)) {
+    (void)launch_tag;
+    (void)Redu;
+    (void)KernelFunc;
+    static_assert(!std::is_same<KernelName, KernelName>::value,
+                  "Requested parallel_for launch method not implemented");
   }
 
   template <typename KernelName, typename KernelType, int Dims,
@@ -1892,6 +1956,17 @@ public:
       MLastEvent = *CopyEvent;
   }
 
+  template <typename KernelName = detail::auto_name, typename... RestT>
+  std::enable_if_t<
+      (sizeof...(RestT) >= 3 &&
+       ext::oneapi::detail::AreAllButLastReductions<RestT...>::value)>
+  parallel_for(launch launch_tag, RestT... Rest) {
+    (void)launch_tag;
+    throw sycl::runtime_error(
+        "Requested parallel_for launch method not implemented",
+        PI_INVALID_LAUNCH_TAG);
+  }
+
   /// Hierarchical kernel invocation method of a kernel defined as a lambda
   /// encoding the body of each work-group to launch.
   ///
@@ -2029,6 +2104,13 @@ public:
     setType(detail::CG::Kernel);
     extractArgsAndReqs();
     MKernelName = getKernelName();
+  }
+
+  void parallel_for(launch launch_tag, kernel Kernel) {
+    (void)launch_tag;
+    (void)Kernel;
+    throw sycl::runtime_error("Requested launch method not implemented",
+                              PI_INVALID_LAUNCH_TAG);
   }
 
   /// Defines and invokes a SYCL kernel function.
@@ -2184,6 +2266,16 @@ public:
       StoreLambda<NameT, KernelType, Dims, LambdaArgType>(
           std::move(KernelFunc));
 #endif
+  }
+
+  template <typename KernelName = detail::auto_name, typename KernelType>
+  void parallel_for(launch launch_tag, kernel Kernel,
+                    _KERNELFUNCPARAM(KernelFunc)) {
+    (void)launch_tag;
+    (void)Kernel;
+    (void)KernelFunc;
+    static_assert(!std::is_same<KernelName, KernelName>::value,
+                  "Requested parallel_for launch method not implemented");
   }
 
   /// Hierarchical kernel invocation method of a kernel.

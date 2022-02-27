@@ -165,7 +165,8 @@ static pi_result redefinedEventsWait(pi_uint32 num_events,
 static pi_result redefinedEnqueueKernelLaunch(pi_queue, pi_kernel, pi_uint32,
                                               const size_t *, const size_t *,
                                               const size_t *, pi_uint32,
-                                              const pi_event *, pi_event *) {
+                                              const pi_event *, pi_event *,
+                                              sycl::launch) {
   return PI_SUCCESS;
 }
 

@@ -150,7 +150,7 @@ static pi_result redefinedEnqueueKernelLaunch(pi_queue, pi_kernel, pi_uint32,
                                               const size_t *, const size_t *,
                                               const size_t *LocalSize,
                                               pi_uint32, const pi_event *,
-                                              pi_event *) {
+                                              pi_event *, sycl::launch) {
   if (LocalSize) {
     IncomingLocalSize[0] = LocalSize[0];
     IncomingLocalSize[1] = LocalSize[1];

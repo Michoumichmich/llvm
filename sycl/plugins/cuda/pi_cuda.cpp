@@ -270,6 +270,24 @@ void guessLocalWorkSize(size_t *threadsPerBlock, const size_t *global_work_size,
   }
 }
 
+void getMaxOccupancySizes(pi_kernel kernel, size_t blocksPerGrid[3],
+                          size_t threadsPerBlock[3], size_t *maxWorkGroupSize) {
+  pi_uint32 local_size = kernel->get_local_size();
+  int minGridSize, blockSize;
+  PI_CHECK_ERROR(cuOccupancyMaxPotentialBlockSizeWithFlags(
+      &minGridSize, &blockSize, kernel->get(), nullptr, local_size, 0,
+      CU_OCCUPANCY_DEFAULT));
+  *maxWorkGroupSize = minGridSize * blockSize;
+  // std::cout << "local_size: " << local_size << ", minGridSize: " <<
+  // minGridSize << ", blockSize: " << blockSize << std::endl;
+  blocksPerGrid[0] = minGridSize;
+  blocksPerGrid[1] = 1;
+  blocksPerGrid[2] = 1;
+  threadsPerBlock[0] = blockSize;
+  threadsPerBlock[1] = 1;
+  threadsPerBlock[2] = 1;
+}
+
 } // anonymous namespace
 
 /// ------ Error handling, matching OpenCL plugin semantics.
@@ -2681,7 +2699,8 @@ pi_result cuda_piEnqueueKernelLaunch(
     pi_queue command_queue, pi_kernel kernel, pi_uint32 work_dim,
     const size_t *global_work_offset, const size_t *global_work_size,
     const size_t *local_work_size, pi_uint32 num_events_in_wait_list,
-    const pi_event *event_wait_list, pi_event *event) {
+    const pi_event *event_wait_list, pi_event *event,
+    sycl::launch launch_type = sycl::launch::none) {
 
   // Preconditions
   assert(command_queue != nullptr);
@@ -2690,12 +2709,24 @@ pi_result cuda_piEnqueueKernelLaunch(
   assert(global_work_offset != nullptr);
   assert(work_dim > 0);
   assert(work_dim < 4);
+  if ((launch_type == sycl::launch::max_occupancy ||
+       launch_type == sycl::launch::cooperative) &&
+      work_dim != 1) {
+    return PI_INVALID_LAUNCH_TAG;
+  }
+
+  if (launch_type != sycl::launch::none &&
+      launch_type != sycl::launch::max_occupancy &&
+      launch_type != sycl::launch::cooperative) {
+    return PI_INVALID_LAUNCH_TAG;
+  }
 
   // Set the number of threads per block to the number of threads per warp
   // by default unless user has provided a better number
   size_t threadsPerBlock[3] = {32u, 1u, 1u};
+  size_t blocksPerGrid[3] = {1u, 1u, 1u};
   size_t maxWorkGroupSize = 0u;
-  size_t maxThreadsPerBlock[3] = {};
+  size_t maxThreadsPerBlock[3] = {1u, 1u, 1u};
   bool providedLocalWorkGroupSize = (local_work_size != nullptr);
   pi_uint32 local_size = kernel->get_local_size();
   pi_result retError = PI_SUCCESS;
@@ -2709,7 +2740,7 @@ pi_result cuda_piEnqueueKernelLaunch(
       command_queue->device_->get_max_work_item_sizes(
           sizeof(maxThreadsPerBlock), maxThreadsPerBlock);
 
-      if (providedLocalWorkGroupSize) {
+      if (providedLocalWorkGroupSize && global_work_size) {
         auto isValid = [&](int dim) {
           if (reqdThreadsPerBlock[dim] != 0 &&
               local_work_size[dim] != reqdThreadsPerBlock[dim])
@@ -2733,6 +2764,11 @@ pi_result cuda_piEnqueueKernelLaunch(
           if (err != PI_SUCCESS)
             return err;
         }
+      } else if (launch_type == sycl::launch::cooperative ||
+                 launch_type == sycl::launch::max_occupancy) {
+        getMaxOccupancySizes(kernel, blocksPerGrid, threadsPerBlock,
+                             &maxWorkGroupSize);
+
       } else {
         guessLocalWorkSize(threadsPerBlock, global_work_size,
                            maxThreadsPerBlock, kernel, local_size);
@@ -2744,11 +2780,12 @@ pi_result cuda_piEnqueueKernelLaunch(
       return PI_INVALID_WORK_GROUP_SIZE;
     }
 
-    size_t blocksPerGrid[3] = {1u, 1u, 1u};
-
-    for (size_t i = 0; i < work_dim; i++) {
-      blocksPerGrid[i] =
-          (global_work_size[i] + threadsPerBlock[i] - 1) / threadsPerBlock[i];
+    if (launch_type != sycl::launch::cooperative &&
+        launch_type != sycl::launch::max_occupancy) {
+      for (size_t i = 0; i < work_dim; i++) {
+        blocksPerGrid[i] =
+            (global_work_size[i] + threadsPerBlock[i] - 1) / threadsPerBlock[i];
+      }
     }
 
     std::unique_ptr<_pi_event> retImplEv{nullptr};
@@ -2785,10 +2822,19 @@ pi_result cuda_piEnqueueKernelLaunch(
       retImplEv->start();
     }
 
-    retError = PI_CHECK_ERROR(cuLaunchKernel(
-        cuFunc, blocksPerGrid[0], blocksPerGrid[1], blocksPerGrid[2],
-        threadsPerBlock[0], threadsPerBlock[1], threadsPerBlock[2], local_size,
-        cuStream, const_cast<void **>(argIndices.data()), nullptr));
+    if (launch_type == sycl::launch::cooperative) {
+      retError = PI_CHECK_ERROR(cuLaunchCooperativeKernel(
+          cuFunc, blocksPerGrid[0], blocksPerGrid[1], blocksPerGrid[2],
+          threadsPerBlock[0], threadsPerBlock[1], threadsPerBlock[2],
+          local_size, cuStream, const_cast<void **>(argIndices.data())));
+    } else {
+      retError = PI_CHECK_ERROR(cuLaunchKernel(
+          cuFunc, blocksPerGrid[0], blocksPerGrid[1], blocksPerGrid[2],
+          threadsPerBlock[0], threadsPerBlock[1], threadsPerBlock[2],
+          local_size, cuStream, const_cast<void **>(argIndices.data()),
+          nullptr));
+    }
+
     if (local_size != 0)
       kernel->clear_local_size();
 
