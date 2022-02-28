@@ -76,9 +76,9 @@ Memory order is stored in the lowest 5 bits */                                  
 
 #define __CLC_NVVM_ATOMIC_CAS(TYPE, TYPE_MANGLED, TYPE_NV, TYPE_MANGLED_NV,    \
                               OP, OP_MANGLED)                                  \
-  __CLC_NVVM_ATOMIC_CAS_IMPL(TYPE, TYPE_MANGLED, TYPE_NV, TYPE_MANGLED_NV, OP, \
+  __attribute__((always_inline))__CLC_NVVM_ATOMIC_CAS_IMPL(TYPE, TYPE_MANGLED, TYPE_NV, TYPE_MANGLED_NV, OP, \
                              OP_MANGLED, __global, AS1, _global_)              \
-  __CLC_NVVM_ATOMIC_CAS_IMPL(TYPE, TYPE_MANGLED, TYPE_NV, TYPE_MANGLED_NV, OP, \
+ __attribute__((always_inline)) __CLC_NVVM_ATOMIC_CAS_IMPL(TYPE, TYPE_MANGLED, TYPE_NV, TYPE_MANGLED_NV, OP, \
                              OP_MANGLED, __local, AS3, _shared_)
 
 __CLC_NVVM_ATOMIC_CAS(int, i, int, i, cas, CompareExchange)
